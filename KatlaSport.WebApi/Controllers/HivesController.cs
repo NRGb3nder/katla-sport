@@ -59,6 +59,53 @@ namespace KatlaSport.WebApi.Controllers
             return Ok(hive);
         }
 
+        [HttpPost]
+        [Route("")]
+        [SwaggerResponse(HttpStatusCode.Created, Description = "Creates a new hive.")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "The server could not understand the request due to invalid syntax.")]
+        [SwaggerResponse(HttpStatusCode.Conflict, Description = "The request could not be completed due to a conflict with the current state of the resource.")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "The server encountered an unexpected condition that prevented it from fulfilling the request.")]
+        public async Task<IHttpActionResult> AddHive([FromBody] UpdateHiveRequest createRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var hive = await _hiveService.CreateHiveAsync(createRequest);
+            var location = string.Format("/api/hives/{0}", hive.Id);
+            return Created<Hive>(location, hive);
+        }
+
+        [HttpPut]
+        [Route("{hiveId:int:min(1)}")]
+        [SwaggerResponse(HttpStatusCode.NoContent, Description = "Updates an existed hive.")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "The server could not understand the request due to invalid syntax.")]
+        [SwaggerResponse(HttpStatusCode.Conflict, Description = "The request could not be completed due to a conflict with the current state of the resource.")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "The server encountered an unexpected condition that prevented it from fulfilling the request.")]
+        public async Task<IHttpActionResult> UpdateHive([FromUri] int hiveId, [FromBody] UpdateHiveRequest updateRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _hiveService.UpdateHiveAsync(hiveId, updateRequest);
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent));
+        }
+
+        [HttpDelete]
+        [Route("{hiveId:int:min(1)}")]
+        [SwaggerResponse(HttpStatusCode.NoContent, Description = "Deletes an existed hive.")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "The server could not understand the request due to invalid syntax.")]
+        [SwaggerResponse(HttpStatusCode.Conflict, Description = "The request could not be completed due to a conflict with the current state of the resource.")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "The server encountered an unexpected condition that prevented it from fulfilling the request.")]
+        public async Task<IHttpActionResult> DeleteHive([FromUri] int hiveId)
+        {
+            await _hiveService.DeleteHiveAsync(hiveId);
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent));
+        }
+
         [HttpPut]
         [Route("{hiveId:int:min(1)}/status/{deletedStatus:bool}")]
         [SwaggerResponse(HttpStatusCode.NoContent, Description = "Sets deleted status for an existed hive.")]
